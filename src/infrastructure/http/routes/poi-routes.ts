@@ -62,7 +62,7 @@ export function createPoiRoutes({ getPoi, listPois }: PoiRouteDeps) {
             200: {
               type: 'object',
               properties: {
-                items: { type: 'array', items: { type: 'object' } },
+                items: { type: 'array', items: { type: 'object', additionalProperties: true } },
                 nextCursor: { type: 'string', nullable: true },
                 hasMore: { type: 'boolean' },
               },
@@ -110,6 +110,7 @@ export function createPoiRoutes({ getPoi, listPois }: PoiRouteDeps) {
           response: {
             200: {
               type: 'object',
+              additionalProperties: true,
               description: 'POI details',
             },
             404: {
