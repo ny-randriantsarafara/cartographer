@@ -1,0 +1,32 @@
+{
+  "name": "cartographer",
+  "version": "0.1.0",
+  "description": "Cartographer API service",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/geojson": "^7946.0.16",
+    "@types/node": "^20.11.0",
+    "@types/pg": "^8.16.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "eslint": "^8.56.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@fastify/sensible": "^5.5.0",
+    "fastify": "^4.25.2",
+    "kysely": "^0.28.9",
+    "pg": "^8.17.1",
+    "wkx": "^0.5.0"
+  }
+}
