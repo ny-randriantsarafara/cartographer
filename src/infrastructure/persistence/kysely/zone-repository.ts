@@ -1,10 +1,9 @@
 import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
-import { Zone } from '../../domain';
-import type { ZoneRepository, CursorPage, CursorPaginationParams, Point } from '../../domain';
-import type { DB, ZonesTable } from './schema';
-import { buildCursorResponse, getCursorOsmId } from './cursor-pagination';
-import { wkbToGeoJSON } from './geometry';
+import { Zone } from '../../../domain';
+import type { ZoneRepository, CursorPage, CursorPaginationParams, Point } from '../../../domain';
+import type { DB, ZonesTable } from '../schema';
+import { buildCursorResponse, getCursorOsmId, wkbToGeoJSON } from '../utils';
 
 function mapRowToZone(row: ZonesTable): Zone {
   return new Zone(

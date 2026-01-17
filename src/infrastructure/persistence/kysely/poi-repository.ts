@@ -1,10 +1,10 @@
 import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
-import { Poi } from '../../domain';
-import type { PoiRepository, Address, CursorPage, CursorPaginationParams, Point, RadiusQuery } from '../../domain';
-import type { DB, PoisTable } from './schema';
-import { buildCursorResponse, getCursorOsmId } from './cursor-pagination';
-import { wkbToGeoJSON } from './geometry';
+import { Poi } from '../../../domain';
+import type { PoiRepository, Address, CursorPage, CursorPaginationParams, Point, RadiusQuery } from '../../../domain';
+import type { DB, PoisTable } from '../schema';
+import { buildCursorResponse, getCursorOsmId } from '../utils';
+import { wkbToGeoJSON } from '../utils';
 
 function mapRowToPoi(row: PoisTable): Poi {
   return new Poi(
