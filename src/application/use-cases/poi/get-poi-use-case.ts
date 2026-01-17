@@ -1,4 +1,4 @@
-import type { Poi, PoiRepository } from "../../domain/poi/index.js";
+import type { Poi, PoiRepository } from "../../../domain/index.js";
 
 export class GetPoiUseCase {
   constructor(private readonly poiRepository: PoiRepository) {}

@@ -1,8 +1,8 @@
 import type { Kysely } from "kysely";
 import { sql } from "kysely";
-import { Zone } from "../../domain/zone/zone.js";
-import type { ZoneRepository } from "../../domain/zone/index.js";
-import type { CursorPage, CursorPaginationParams, Point } from "../../domain/shared/index.js";
+import { Zone } from "../../domain/index.js";
+import type { ZoneRepository } from "../../domain/index.js";
+import type { CursorPage, CursorPaginationParams, Point } from "../../domain/index.js";
 import type { DB, ZonesTable } from "./schema.js";
 import { buildCursorResponse, getCursorOsmId } from "./cursor-pagination.js";
 import { wkbToGeoJSON } from "./geometry.js";

@@ -1,8 +1,8 @@
 import type { Kysely } from "kysely";
 import { sql } from "kysely";
-import { Poi } from "../../domain/poi/poi.js";
-import type { PoiRepository, Address } from "../../domain/poi/index.js";
-import type { CursorPage, CursorPaginationParams, Point, RadiusQuery } from "../../domain/shared/index.js";
+import { Poi } from "../../domain/index.js";
+import type { PoiRepository, Address } from "../../domain/index.js";
+import type { CursorPage, CursorPaginationParams, Point, RadiusQuery } from "../../domain/index.js";
 import type { DB, PoisTable } from "./schema.js";
 import { buildCursorResponse, getCursorOsmId } from "./cursor-pagination.js";
 import { wkbToGeoJSON } from "./geometry.js";

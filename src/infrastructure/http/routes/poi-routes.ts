@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import type { GetPoiUseCase, ListPoisUseCase } from "../../../application/poi/index.js";
+import type { UseCases } from "../../container.js";
 
 interface PoiParams {
   id: string;
@@ -14,10 +14,7 @@ interface ListPoisQuery {
   radius?: string;
 }
 
-export function createPoiRoutes(
-  getPoiUseCase: GetPoiUseCase,
-  listPoisUseCase: ListPoisUseCase
-) {
+export function createPoiRoutes(useCases: UseCases) {
   return async function poiRoutes(fastify: FastifyInstance) {
     fastify.get<{ Querystring: ListPoisQuery }>("/pois", async (request, reply) => {
       const { cursor, limit = "20", category, lat, lng, radius } = request.query;
@@ -29,7 +26,7 @@ export function createPoiRoutes(
         ? { center: near!, radiusMeters: parseFloat(radius) }
         : undefined;
 
-      const result = await listPoisUseCase.execute({
+      const result = await useCases.listPois.execute({
         cursor,
         limit: parsedLimit,
         category,
@@ -41,7 +38,7 @@ export function createPoiRoutes(
     });
 
     fastify.get<{ Params: PoiParams }>("/pois/:id", async (request, reply) => {
-      const poi = await getPoiUseCase.execute(request.params.id);
+      const poi = await useCases.getPoi.execute(request.params.id);
 
       if (!poi) {
         return reply.notFound("POI not found");

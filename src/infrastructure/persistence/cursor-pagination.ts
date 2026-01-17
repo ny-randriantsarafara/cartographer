@@ -1,4 +1,4 @@
-import type { CursorPaginationParams } from "../../domain/shared/index.js";
+import type { CursorPaginationParams } from "../../domain/object-values/index.js";
 
 export function encodeCursor(osmId: string): string {
   return Buffer.from(osmId).toString("base64");

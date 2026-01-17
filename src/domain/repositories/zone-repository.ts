@@ -1,5 +1,5 @@
-import type { CursorPage, CursorPaginationParams, Point, ReadRepository } from "../shared/index.js";
-import type { Zone } from "./zone.js";
+import type { CursorPage, CursorPaginationParams, Point, ReadRepository } from "../object-values/index.js";
+import type { Zone } from "../models/zone.js";
 
 export interface ZoneRepository extends ReadRepository<Zone, string> {
   findByType(zoneType: string, params: CursorPaginationParams): Promise<CursorPage<Zone>>;

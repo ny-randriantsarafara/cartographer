@@ -1,6 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import type { GetZoneUseCase, ListZonesUseCase } from "../../../application/zone/index.js";
-import type { ListPoisUseCase } from "../../../application/poi/index.js";
+import type { UseCases } from "../../container.js";
 
 interface ZoneParams {
   id: string;
@@ -19,11 +18,7 @@ interface ZonePoisQuery {
   limit?: string;
 }
 
-export function createZoneRoutes(
-  getZoneUseCase: GetZoneUseCase,
-  listZonesUseCase: ListZonesUseCase,
-  listPoisUseCase: ListPoisUseCase
-) {
+export function createZoneRoutes(useCases: UseCases) {
   return async function zoneRoutes(fastify: FastifyInstance) {
     fastify.get<{ Querystring: ListZonesQuery }>("/zones", async (request, reply) => {
       const { cursor, limit = "20", type, lat, lng } = request.query;
@@ -32,7 +27,7 @@ export function createZoneRoutes(
       const hasCoordinates = lat !== undefined && lng !== undefined;
       const containing = hasCoordinates ? { lat: parseFloat(lat), lng: parseFloat(lng) } : undefined;
 
-      const result = await listZonesUseCase.execute({
+      const result = await useCases.listZones.execute({
         cursor,
         limit: parsedLimit,
         type,
@@ -43,7 +38,7 @@ export function createZoneRoutes(
     });
 
     fastify.get<{ Params: ZoneParams }>("/zones/:id", async (request, reply) => {
-      const zone = await getZoneUseCase.execute(request.params.id);
+      const zone = await useCases.getZone.execute(request.params.id);
 
       if (!zone) {
         return reply.notFound("Zone not found");
@@ -58,12 +53,12 @@ export function createZoneRoutes(
         const { cursor, limit = "20" } = request.query;
         const parsedLimit = Math.min(parseInt(limit, 10) || 20, 100);
 
-        const zone = await getZoneUseCase.execute(request.params.id);
+        const zone = await useCases.getZone.execute(request.params.id);
         if (!zone) {
           return reply.notFound("Zone not found");
         }
 
-        const result = await listPoisUseCase.execute({
+        const result = await useCases.listPois.execute({
           cursor,
           limit: parsedLimit,
           zoneId: request.params.id,
