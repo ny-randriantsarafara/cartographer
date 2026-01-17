@@ -20,6 +20,9 @@ async function main() {
     origin: true,
   });
 
+  const isProduction = process.env.NODE_ENV === 'production';
+  const serverUrl = process.env.SERVER_URL || `http://localhost:${env.port}`;
+
   await fastify.register(swagger, {
     openapi: {
       info: {
@@ -29,8 +32,8 @@ async function main() {
       },
       servers: [
         {
-          url: `http://localhost:${env.port}`,
-          description: 'Development server',
+          url: serverUrl,
+          description: isProduction ? 'Production server' : 'Development server',
         },
       ],
       tags: [
@@ -42,7 +45,7 @@ async function main() {
   });
 
   await fastify.register(swaggerUi, {
-    routePrefix: '/documentation',
+    routePrefix: '/docs',
     uiConfig: {
       docExpansion: 'list',
       deepLinking: true,
