@@ -2,6 +2,21 @@
 
 The API supports spatial queries using PostGIS functions. All coordinates use WGS84 (EPSG:4326).
 
+## Coordinate System
+
+- **SRID 4326** (WGS84) - Standard GPS coordinates
+- **Latitude** (lat): -90 to 90 (North/South)
+- **Longitude** (lng): -180 to 180 (East/West)
+
+**Important**: PostGIS uses `(lng, lat)` order internally, but the API accepts `lat` and `lng` as separate query parameters.
+
+## Data Flow
+
+```
+API Request              PostGIS                      Response
+lat=-18.9, lng=47.5  →  ST_MakePoint(47.5, -18.9)  →  GeoJSON
+```
+
 ## POI Queries
 
 ### Near a Point
@@ -48,33 +63,55 @@ Returns zones ordered by area (smallest first), so you get the most specific zon
 
 Uses `ST_Contains` to check if the point falls within each zone's polygon.
 
-## Coordinate Format
-
-All coordinates use:
-- `lat`: Latitude in decimal degrees (-90 to 90)
-- `lng`: Longitude in decimal degrees (-180 to 180)
-
-Example for Antananarivo:
-```
-lat=-18.8792
-lng=47.5079
-```
-
 ## PostGIS Functions Used
 
-| Function | Purpose |
-|----------|---------|
-| `ST_Distance` | Calculate distance between geometries |
-| `ST_DWithin` | Check if geometries are within a distance |
-| `ST_Contains` | Check if one geometry contains another |
-| `ST_SetSRID` | Set coordinate reference system |
-| `ST_MakePoint` | Create a point from lat/lng |
+| Function       | Purpose                                  |
+| -------------- | ---------------------------------------- |
+| `ST_MakePoint` | Create a point from lng/lat              |
+| `ST_SetSRID`   | Set coordinate reference system (4326)   |
+| `ST_Distance`  | Calculate distance between geometries    |
+| `ST_DWithin`   | Check if geometries are within a distance|
+| `ST_Contains`  | Check if one geometry contains another   |
 
-## Geometry Format
+## Geometry vs Geography
 
-Responses include geometry as GeoJSON. The database stores geometries as WKB (Well-Known Binary) and they are converted to GeoJSON in the response.
+PostGIS has two spatial types:
 
-Example POI geometry:
+| Type        | Unit    | Speed  | Accuracy                   |
+| ----------- | ------- | ------ | -------------------------- |
+| `geometry`  | Degrees | Fast   | Flat Earth approximation   |
+| `geography` | Meters  | Slower | Spherical calculations     |
+
+**Our approach**:
+
+- Store as `geometry` (efficient)
+- Cast to `geography` for distance calculations (accurate)
+
+```sql
+-- Distance in meters (accurate)
+ST_Distance(geometry::geography, point::geography)
+
+-- Containment check (uses geometry, faster)
+ST_Contains(geometry, point)
+```
+
+## Storage Format: WKB
+
+PostGIS stores geometries as WKB (Well-Known Binary):
+
+```
+0101000020E610000000000000C0C34740CDCCCCCCCCDC32C0
+│└──────┘│└──────┘└────────────────────────────────┘
+│  type  │  SRID        coordinates (8 bytes each)
+└─ endianness
+```
+
+The API converts WKB to GeoJSON for responses using the `wkx` library.
+
+## Geometry Format in Responses
+
+Example POI geometry (Point):
+
 ```json
 {
   "type": "Point",
@@ -82,10 +119,43 @@ Example POI geometry:
 }
 ```
 
-Example Zone geometry:
+Example Zone geometry (Polygon):
+
 ```json
 {
   "type": "Polygon",
-  "coordinates": [[[...], [...], ...]]
+  "coordinates": [[[47.5, -18.9], [47.6, -18.9], [47.6, -18.8], [47.5, -18.8], [47.5, -18.9]]]
 }
 ```
+
+## Examples
+
+### Find restaurants within 500m
+
+```bash
+curl "http://localhost:3000/pois?lat=-18.9&lng=47.5&radius=500&category=food"
+```
+
+### Find district containing a point
+
+```bash
+curl "http://localhost:3000/zones?lat=-18.9&lng=47.5&type=district"
+```
+
+### Get all POIs in a specific zone
+
+```bash
+curl "http://localhost:3000/zones/relation/123456/pois"
+```
+
+## Performance Tips
+
+1. **Use radius queries** instead of sorting all POIs by distance
+2. **Add spatial indexes** on geometry columns:
+
+   ```sql
+   CREATE INDEX idx_pois_geometry ON pois USING GIST (geometry);
+   CREATE INDEX idx_zones_geometry ON zones USING GIST (geometry);
+   ```
+
+3. **Use appropriate precision** - don't request more decimal places than needed

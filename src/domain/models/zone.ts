@@ -1,4 +1,4 @@
-import type { GeoJSON } from "geojson";
+import type { GeoJSON } from 'geojson';
 
 export class Zone {
   constructor(
@@ -13,6 +13,6 @@ export class Zone {
     public readonly centroid: GeoJSON.Geometry | null,
     public readonly zoneType: string,
     public readonly createdAt: Date | null,
-    public readonly updatedAt: Date | null
+    public readonly updatedAt: Date | null,
   ) {}
 }

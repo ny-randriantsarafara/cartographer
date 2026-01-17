@@ -1,4 +1,4 @@
-import type { GeoJSON } from "geojson";
+import type { GeoJSON } from 'geojson';
 
 export interface Address {
   street?: string;
@@ -24,6 +24,6 @@ export class Poi {
     public readonly is247: boolean | null,
     public readonly formattedAddress: string | null,
     public readonly createdAt: Date | null,
-    public readonly updatedAt: Date | null
+    public readonly updatedAt: Date | null,
   ) {}
 }

@@ -1,5 +1,4 @@
-import type { Poi, PoiRepository } from "../../../domain/index.js";
-import type { CursorPage, CursorPaginationParams, Point, RadiusQuery } from "../../../domain/index.js";
+import type { Poi, PoiRepository, CursorPage, CursorPaginationParams, Point, RadiusQuery } from '../../../domain';
 
 export interface ListPoisQuery extends CursorPaginationParams {
   category?: string;

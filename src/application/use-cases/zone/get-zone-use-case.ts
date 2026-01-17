@@ -1,4 +1,4 @@
-import type { Zone, ZoneRepository } from "../../domain/index.js";
+import type { Zone, ZoneRepository } from '../../../domain';
 
 export class GetZoneUseCase {
   constructor(private readonly zoneRepository: ZoneRepository) {}

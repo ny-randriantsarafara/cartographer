@@ -1,2 +1,2 @@
-export * from "./pagination.js";
-export * from "./spatial.js";
+export * from './pagination';
+export * from './spatial';

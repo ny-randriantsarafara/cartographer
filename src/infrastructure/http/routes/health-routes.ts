@@ -1,15 +1,15 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance } from 'fastify';
 
 interface HealthResponse {
-  status: "ok" | "error";
+  status: 'ok' | 'error';
   timestamp: string;
   uptime: number;
 }
 
 export async function healthRoutes(fastify: FastifyInstance) {
-  fastify.get<{ Reply: HealthResponse }>("/health", async () => {
+  fastify.get<{ Reply: HealthResponse }>('/health', async () => {
     return {
-      status: "ok",
+      status: 'ok',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
     };

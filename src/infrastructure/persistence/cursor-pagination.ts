@@ -1,16 +1,16 @@
-import type { CursorPaginationParams } from "../../domain/object-values/index.js";
+import type { CursorPaginationParams } from '../../domain';
 
 export function encodeCursor(osmId: string): string {
-  return Buffer.from(osmId).toString("base64");
+  return Buffer.from(osmId).toString('base64');
 }
 
 export function decodeCursor(cursor: string): string {
-  return Buffer.from(cursor, "base64").toString("utf-8");
+  return Buffer.from(cursor, 'base64').toString('utf-8');
 }
 
 export function buildCursorResponse<T extends { osmId: string }>(
   items: T[],
-  limit: number
+  limit: number,
 ): { items: T[]; nextCursor: string | null; hasMore: boolean } {
   const hasMore = items.length > limit;
   const pageItems = hasMore ? items.slice(0, limit) : items;

@@ -1,7 +1,7 @@
-import type { Kysely } from "kysely";
-import type { PoiRepository, ZoneRepository } from "../domain/index.js";
-import { GetPoiUseCase, ListPoisUseCase, GetZoneUseCase, ListZonesUseCase } from "../application/index.js";
-import { KyselyPoiRepository, KyselyZoneRepository, type DB } from "./persistence/index.js";
+import type { Kysely } from 'kysely';
+import type { PoiRepository, ZoneRepository } from '../domain';
+import { GetPoiUseCase, ListPoisUseCase, GetZoneUseCase, ListZonesUseCase } from '../application';
+import { KyselyPoiRepository, KyselyZoneRepository, type DB } from './persistence';
 
 export interface Repositories {
   poi: PoiRepository;

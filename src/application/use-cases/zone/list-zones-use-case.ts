@@ -1,5 +1,4 @@
-import type { CursorPage, CursorPaginationParams, Point } from "../../domain/index.js";
-import type { Zone, ZoneRepository } from "../../domain/index.js";
+import type { CursorPage, CursorPaginationParams, Point, Zone, ZoneRepository } from '../../../domain';
 
 export interface ListZonesQuery extends CursorPaginationParams {
   type?: string;

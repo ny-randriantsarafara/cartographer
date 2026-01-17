@@ -1,2 +1,2 @@
-export * from "./poi.js";
-export * from "./zone.js";
+export * from './poi';
+export * from './zone';

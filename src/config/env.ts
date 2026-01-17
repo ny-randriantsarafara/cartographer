@@ -1,4 +1,4 @@
-import "dotenv/config";
+import 'dotenv/config';
 
 export interface Env {
   databaseUrl: string;
@@ -9,12 +9,12 @@ export interface Env {
 export function loadEnv(): Env {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
-    throw new Error("DATABASE_URL environment variable is required");
+    throw new Error('DATABASE_URL environment variable is required');
   }
 
   return {
     databaseUrl,
-    port: parseInt(process.env.PORT || "3000", 10),
-    host: process.env.HOST || "0.0.0.0",
+    port: parseInt(process.env.PORT || '3000', 10),
+    host: process.env.HOST || '0.0.0.0',
   };
 }

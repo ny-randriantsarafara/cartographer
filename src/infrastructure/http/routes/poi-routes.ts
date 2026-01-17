@@ -1,5 +1,5 @@
-import type { FastifyInstance } from "fastify";
-import type { UseCases } from "../../container.js";
+import type { FastifyInstance } from 'fastify';
+import type { GetPoiUseCase, ListPoisUseCase } from '../../../application';
 
 interface PoiParams {
   id: string;
@@ -14,19 +14,22 @@ interface ListPoisQuery {
   radius?: string;
 }
 
-export function createPoiRoutes(useCases: UseCases) {
+interface PoiRouteDeps {
+  getPoi: GetPoiUseCase;
+  listPois: ListPoisUseCase;
+}
+
+export function createPoiRoutes({ getPoi, listPois }: PoiRouteDeps) {
   return async function poiRoutes(fastify: FastifyInstance) {
-    fastify.get<{ Querystring: ListPoisQuery }>("/pois", async (request, reply) => {
-      const { cursor, limit = "20", category, lat, lng, radius } = request.query;
+    fastify.get<{ Querystring: ListPoisQuery }>('/pois', async (request, reply) => {
+      const { cursor, limit = '20', category, lat, lng, radius } = request.query;
       const parsedLimit = Math.min(parseInt(limit, 10) || 20, 100);
 
       const hasCoordinates = lat !== undefined && lng !== undefined;
       const near = hasCoordinates ? { lat: parseFloat(lat), lng: parseFloat(lng) } : undefined;
-      const radiusQuery = hasCoordinates && radius
-        ? { center: near!, radiusMeters: parseFloat(radius) }
-        : undefined;
+      const radiusQuery = hasCoordinates && radius ? { center: near!, radiusMeters: parseFloat(radius) } : undefined;
 
-      const result = await useCases.listPois.execute({
+      const result = await listPois.execute({
         cursor,
         limit: parsedLimit,
         category,
@@ -37,11 +40,11 @@ export function createPoiRoutes(useCases: UseCases) {
       return reply.send(result);
     });
 
-    fastify.get<{ Params: PoiParams }>("/pois/:id", async (request, reply) => {
-      const poi = await useCases.getPoi.execute(request.params.id);
+    fastify.get<{ Params: PoiParams }>('/pois/:id', async (request, reply) => {
+      const poi = await getPoi.execute(request.params.id);
 
       if (!poi) {
-        return reply.notFound("POI not found");
+        return reply.notFound('POI not found');
       }
 
       return reply.send(poi);

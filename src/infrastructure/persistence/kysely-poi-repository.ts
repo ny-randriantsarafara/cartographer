@@ -1,11 +1,10 @@
-import type { Kysely } from "kysely";
-import { sql } from "kysely";
-import { Poi } from "../../domain/index.js";
-import type { PoiRepository, Address } from "../../domain/index.js";
-import type { CursorPage, CursorPaginationParams, Point, RadiusQuery } from "../../domain/index.js";
-import type { DB, PoisTable } from "./schema.js";
-import { buildCursorResponse, getCursorOsmId } from "./cursor-pagination.js";
-import { wkbToGeoJSON } from "./geometry.js";
+import type { Kysely } from 'kysely';
+import { sql } from 'kysely';
+import { Poi } from '../../domain';
+import type { PoiRepository, Address, CursorPage, CursorPaginationParams, Point, RadiusQuery } from '../../domain';
+import type { DB, PoisTable } from './schema';
+import { buildCursorResponse, getCursorOsmId } from './cursor-pagination';
+import { wkbToGeoJSON } from './geometry';
 
 function mapRowToPoi(row: PoisTable): Poi {
   return new Poi(
@@ -23,7 +22,7 @@ function mapRowToPoi(row: PoisTable): Poi {
     row.is_24_7,
     row.formatted_address,
     row.created_at ?? null,
-    row.updated_at ?? null
+    row.updated_at ?? null,
   );
 }
 
@@ -31,11 +30,7 @@ export class KyselyPoiRepository implements PoiRepository {
   constructor(private readonly db: Kysely<DB>) {}
 
   async findById(osmId: string): Promise<Poi | null> {
-    const row = await this.db
-      .selectFrom("pois")
-      .selectAll()
-      .where("osm_id", "=", osmId)
-      .executeTakeFirst();
+    const row = await this.db.selectFrom('pois').selectAll().where('osm_id', '=', osmId).executeTakeFirst();
 
     return row ? mapRowToPoi(row) : null;
   }
@@ -44,13 +39,13 @@ export class KyselyPoiRepository implements PoiRepository {
     const cursorOsmId = getCursorOsmId(params);
 
     let query = this.db
-      .selectFrom("pois")
+      .selectFrom('pois')
       .selectAll()
-      .orderBy("osm_id", "asc")
+      .orderBy('osm_id', 'asc')
       .limit(params.limit + 1);
 
     if (cursorOsmId) {
-      query = query.where("osm_id", ">", cursorOsmId);
+      query = query.where('osm_id', '>', cursorOsmId);
     }
 
     const rows = await query.execute();
@@ -63,14 +58,14 @@ export class KyselyPoiRepository implements PoiRepository {
     const cursorOsmId = getCursorOsmId(params);
 
     let query = this.db
-      .selectFrom("pois")
+      .selectFrom('pois')
       .selectAll()
-      .where("category", "=", category)
-      .orderBy("osm_id", "asc")
+      .where('category', '=', category)
+      .orderBy('osm_id', 'asc')
       .limit(params.limit + 1);
 
     if (cursorOsmId) {
-      query = query.where("osm_id", ">", cursorOsmId);
+      query = query.where('osm_id', '>', cursorOsmId);
     }
 
     const rows = await query.execute();
@@ -83,16 +78,14 @@ export class KyselyPoiRepository implements PoiRepository {
     const cursorOsmId = getCursorOsmId(params);
 
     let query = this.db
-      .selectFrom("pois")
+      .selectFrom('pois')
       .selectAll()
-      .orderBy(
-        sql`ST_Distance(geometry, ST_SetSRID(ST_MakePoint(${point.lng}, ${point.lat}), 4326)::geography)`
-      )
-      .orderBy("osm_id", "asc")
+      .orderBy(sql`ST_Distance(geometry, ST_SetSRID(ST_MakePoint(${point.lng}, ${point.lat}), 4326)::geography)`)
+      .orderBy('osm_id', 'asc')
       .limit(params.limit + 1);
 
     if (cursorOsmId) {
-      query = query.where("osm_id", ">", cursorOsmId);
+      query = query.where('osm_id', '>', cursorOsmId);
     }
 
     const rows = await query.execute();
@@ -106,7 +99,7 @@ export class KyselyPoiRepository implements PoiRepository {
     const { center, radiusMeters } = query;
 
     let dbQuery = this.db
-      .selectFrom("pois")
+      .selectFrom('pois')
       .selectAll()
       .where(
         sql`ST_DWithin(
@@ -114,17 +107,15 @@ export class KyselyPoiRepository implements PoiRepository {
           ST_SetSRID(ST_MakePoint(${center.lng}, ${center.lat}), 4326)::geography,
           ${radiusMeters}
         )`,
-        "=",
-        sql`true`
+        '=',
+        sql`true`,
       )
-      .orderBy(
-        sql`ST_Distance(geometry, ST_SetSRID(ST_MakePoint(${center.lng}, ${center.lat}), 4326)::geography)`
-      )
-      .orderBy("osm_id", "asc")
+      .orderBy(sql`ST_Distance(geometry, ST_SetSRID(ST_MakePoint(${center.lng}, ${center.lat}), 4326)::geography)`)
+      .orderBy('osm_id', 'asc')
       .limit(params.limit + 1);
 
     if (cursorOsmId) {
-      dbQuery = dbQuery.where("osm_id", ">", cursorOsmId);
+      dbQuery = dbQuery.where('osm_id', '>', cursorOsmId);
     }
 
     const rows = await dbQuery.execute();
@@ -137,21 +128,15 @@ export class KyselyPoiRepository implements PoiRepository {
     const cursorOsmId = getCursorOsmId(params);
 
     let query = this.db
-      .selectFrom("pois")
-      .innerJoin("zones", (join) =>
-        join.on(
-          sql`ST_Contains(zones.geometry, pois.geometry)`,
-          "=",
-          sql`true`
-        )
-      )
-      .where("zones.osm_id", "=", zoneOsmId)
-      .selectAll("pois")
-      .orderBy("pois.osm_id", "asc")
+      .selectFrom('pois')
+      .innerJoin('zones', (join) => join.on(sql`ST_Contains(zones.geometry, pois.geometry)`, '=', sql`true`))
+      .where('zones.osm_id', '=', zoneOsmId)
+      .selectAll('pois')
+      .orderBy('pois.osm_id', 'asc')
       .limit(params.limit + 1);
 
     if (cursorOsmId) {
-      query = query.where("pois.osm_id", ">", cursorOsmId);
+      query = query.where('pois.osm_id', '>', cursorOsmId);
     }
 
     const rows = await query.execute();

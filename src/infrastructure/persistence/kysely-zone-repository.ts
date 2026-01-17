@@ -1,11 +1,10 @@
-import type { Kysely } from "kysely";
-import { sql } from "kysely";
-import { Zone } from "../../domain/index.js";
-import type { ZoneRepository } from "../../domain/index.js";
-import type { CursorPage, CursorPaginationParams, Point } from "../../domain/index.js";
-import type { DB, ZonesTable } from "./schema.js";
-import { buildCursorResponse, getCursorOsmId } from "./cursor-pagination.js";
-import { wkbToGeoJSON } from "./geometry.js";
+import type { Kysely } from 'kysely';
+import { sql } from 'kysely';
+import { Zone } from '../../domain';
+import type { ZoneRepository, CursorPage, CursorPaginationParams, Point } from '../../domain';
+import type { DB, ZonesTable } from './schema';
+import { buildCursorResponse, getCursorOsmId } from './cursor-pagination';
+import { wkbToGeoJSON } from './geometry';
 
 function mapRowToZone(row: ZonesTable): Zone {
   return new Zone(
@@ -20,7 +19,7 @@ function mapRowToZone(row: ZonesTable): Zone {
     row.centroid ? wkbToGeoJSON(row.centroid) : null,
     row.zone_type,
     row.created_at ?? null,
-    row.updated_at ?? null
+    row.updated_at ?? null,
   );
 }
 
@@ -28,11 +27,7 @@ export class KyselyZoneRepository implements ZoneRepository {
   constructor(private readonly db: Kysely<DB>) {}
 
   async findById(osmId: string): Promise<Zone | null> {
-    const row = await this.db
-      .selectFrom("zones")
-      .selectAll()
-      .where("osm_id", "=", osmId)
-      .executeTakeFirst();
+    const row = await this.db.selectFrom('zones').selectAll().where('osm_id', '=', osmId).executeTakeFirst();
 
     return row ? mapRowToZone(row) : null;
   }
@@ -41,13 +36,13 @@ export class KyselyZoneRepository implements ZoneRepository {
     const cursorOsmId = getCursorOsmId(params);
 
     let query = this.db
-      .selectFrom("zones")
+      .selectFrom('zones')
       .selectAll()
-      .orderBy("osm_id", "asc")
+      .orderBy('osm_id', 'asc')
       .limit(params.limit + 1);
 
     if (cursorOsmId) {
-      query = query.where("osm_id", ">", cursorOsmId);
+      query = query.where('osm_id', '>', cursorOsmId);
     }
 
     const rows = await query.execute();
@@ -60,14 +55,14 @@ export class KyselyZoneRepository implements ZoneRepository {
     const cursorOsmId = getCursorOsmId(params);
 
     let query = this.db
-      .selectFrom("zones")
+      .selectFrom('zones')
       .selectAll()
-      .where("zone_type", "=", zoneType)
-      .orderBy("osm_id", "asc")
+      .where('zone_type', '=', zoneType)
+      .orderBy('osm_id', 'asc')
       .limit(params.limit + 1);
 
     if (cursorOsmId) {
-      query = query.where("osm_id", ">", cursorOsmId);
+      query = query.where('osm_id', '>', cursorOsmId);
     }
 
     const rows = await query.execute();
@@ -78,14 +73,10 @@ export class KyselyZoneRepository implements ZoneRepository {
 
   async findContaining(point: Point): Promise<Zone[]> {
     const rows = await this.db
-      .selectFrom("zones")
+      .selectFrom('zones')
       .selectAll()
-      .where(
-        sql`ST_Contains(geometry, ST_SetSRID(ST_MakePoint(${point.lng}, ${point.lat}), 4326))`,
-        "=",
-        sql`true`
-      )
-      .orderBy("area", "asc")
+      .where(sql`ST_Contains(geometry, ST_SetSRID(ST_MakePoint(${point.lng}, ${point.lat}), 4326))`, '=', sql`true`)
+      .orderBy('area', 'asc')
       .execute();
 
     return rows.map(mapRowToZone);
