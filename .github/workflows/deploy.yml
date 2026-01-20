@@ -1,0 +1,76 @@
+name: deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      env_name:
+        description: GitHub Environment name
+        type: choice
+        options:
+          - development
+        default: development
+  workflow_run:
+    branches:
+      - main
+    workflows: ['ci']
+    types:
+      - completed
+
+env:
+  APP_NAME: cartographer
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  APP_DIR: /home/${{ secrets.SSH_USER }}/cartographer
+
+jobs:
+  deploy:
+    name: Deploy to SSH
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.env_name || 'development' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy files to SSH
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: '.'
+          target: ${{ env.APP_DIR }}
+          overwrite: true
+          rm: true
+          exclude: '.git,.github'
+          debug: true
+
+      - name: Build and restart container
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          debug: true
+          envs: APP_NAME,APP_DIR,DATABASE_URL
+          script: |
+            set -e
+
+            echo "Deploying $APP_NAME..."
+
+            mkdir -p "$APP_DIR"
+            cd "$APP_DIR"
+
+            umask 077
+            printf "DATABASE_URL=%s\n" "$DATABASE_URL" > .env
+            echo "Building Docker image..."
+            docker compose build
+
+            echo "Restarting container..."
+            docker compose up -d
+
+            echo "Cleaning up..."
+            docker image prune -f
+
+            echo "Deployment complete!"
+            docker compose ps
